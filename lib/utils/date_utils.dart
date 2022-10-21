@@ -159,5 +159,6 @@ extension DateUtilsExtensions on DateTime {
 
   DateTime removeTime() => DateTime(year, month, day);
 
-  bool isSameMonth(DateTime other) => other.year == year && other.month == month;
+  bool isSameMonth(DateTime other) =>
+      other.year == year && other.month == month;
 }
