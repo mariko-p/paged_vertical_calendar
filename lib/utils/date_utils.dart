@@ -72,6 +72,7 @@ abstract class DateUtils {
 
         Week week =
             Week(firstDayOfWeek, lastDayOfWeek, firstDayOfWeek.weekOfYear);
+
         weeks.add(week);
 
         if (week.isLastWeekOfMonth) break;
