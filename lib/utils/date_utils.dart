@@ -1,4 +1,5 @@
 import 'package:paged_vertical_calendar/utils/date_models.dart';
+import 'package:week_of_year/week_of_year.dart';
 
 class DateUtils {
   /// generates a [Month] object from the Nth index from the startdate
@@ -50,9 +51,9 @@ class DateUtils {
         // fetching up
         Week week;
         if (maxDate != null && firstDayOfWeek.isBefore(maxDate)) {
-          week = Week(maxDate, lastDayOfWeek);
+          week = Week(maxDate, lastDayOfWeek, lastDayOfWeek.weekOfYear);
         } else {
-          week = Week(firstDayOfWeek, lastDayOfWeek);
+          week = Week(firstDayOfWeek, lastDayOfWeek, lastDayOfWeek.weekOfYear);
         }
 
         if (maxDate != null && lastDayOfWeek.isSameDayOrAfter(maxDate)) {
@@ -64,12 +65,12 @@ class DateUtils {
       } else {
         // fetching down
         if (maxDate != null && lastDayOfWeek.isSameDayOrAfter(maxDate)) {
-          Week week = Week(firstDayOfWeek, maxDate);
+          Week week = Week(firstDayOfWeek, maxDate, firstDayOfWeek.weekOfYear);
           weeks.add(week);
           break;
         }
 
-        Week week = Week(firstDayOfWeek, lastDayOfWeek);
+        Week week = Week(firstDayOfWeek, lastDayOfWeek, firstDayOfWeek.weekOfYear);
         weeks.add(week);
 
         if (week.isLastWeekOfMonth) break;
