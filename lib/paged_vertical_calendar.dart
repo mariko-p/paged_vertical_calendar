@@ -3,6 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:paged_vertical_calendar/utils/date_models.dart';
 import 'package:paged_vertical_calendar/utils/date_utils.dart';
+import 'package:paged_vertical_calendar/utils/styles.dart';
+import 'package:sticky_headers/sticky_headers/widget.dart';
 
 /// enum indicating the pagination enpoint direction
 enum PaginationDirection {
@@ -294,53 +296,125 @@ class _MonthView extends StatelessWidget {
   final ValueChanged<DateTime>? onDayPressed;
   final bool startWeekWithSunday;
 
+  final rowSpacer = TableRow(
+    children: [
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        /// display the default month header if none is provided
-        monthBuilder?.call(context, month.month, month.year) ??
+    return StickyHeaderBuilder(
+      overlapHeaders: false,
+      content: Padding(
+        padding: const EdgeInsets.only(
+          top: 5,
+          right: 15,
+        ),
+        child: Column(
+          children: <Widget>[
+            Table(
+              children: List<TableRow>.generate(
+                month.weeks.length * 2 - 1,
+                (int position) {
+                  if (position % 2 != 0) {
+                    return rowSpacer;
+                  } else {
+                    return _generateWeekRow(
+                      context,
+                      month.weeks[position ~/ 2],
+                      startWeekWithSunday,
+                    );
+                  }
+                },
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+          ],
+        ),
+      ),
+      builder: (BuildContext context, double stuckAmount) {
+        stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
+        print("${month.month} $stuckAmount");
+        return monthBuilder?.call(
+              context,
+              month.month,
+              month.year,
+            ) ??
             _DefaultMonthView(
               month: month.month,
               year: month.year,
-            ),
-        Table(
-          children: month.weeks.map((Week week) {
-            return _generateWeekRow(context, week, startWeekWithSunday);
-          }).toList(growable: false),
-        ),
-        SizedBox(
-          height: 20,
-        ),
-      ],
+            );
+      },
     );
   }
 
   TableRow _generateWeekRow(
-      BuildContext context, Week week, bool startWeekWithSunday) {
+    BuildContext context,
+    Week week,
+    bool startWeekWithSunday,
+  ) {
     DateTime firstDay = week.firstDay;
 
     return TableRow(
       children: List<Widget>.generate(
-        DateTime.daysPerWeek,
+        DateTime.daysPerWeek + 1,
         (int position) {
+          if (position == 0) {
+            return AspectRatio(
+              aspectRatio: 1.0,
+              child: Center(
+                child: Text(
+                  week.weekOfYear.toString(),
+                  style: weekOfYear,
+                ),
+              ),
+            );
+          }
+
           DateTime day = DateTime(
             week.firstDay.year,
             week.firstDay.month,
             firstDay.day +
-                (position -
+                ((position - 1) -
                     (DateUtils.getWeekDay(firstDay, startWeekWithSunday) - 1)),
           );
 
-          if ((position + 1) <
+          if (position <
                   DateUtils.getWeekDay(week.firstDay, startWeekWithSunday) ||
-              (position + 1) >
+              position >
                   DateUtils.getWeekDay(week.lastDay, startWeekWithSunday)) {
             return const SizedBox();
           } else {
             return AspectRatio(
               aspectRatio: 1.0,
               child: InkWell(
+                customBorder: new CircleBorder(),
                 onTap: onDayPressed == null ? null : () => onDayPressed!(day),
                 child: dayBuilder?.call(context, day) ??
                     _DefaultDayView(date: day),

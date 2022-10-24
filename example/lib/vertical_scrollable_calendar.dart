@@ -33,11 +33,7 @@ class _VerticalScrollableCalendarState
     );
   }
 
-  Widget monthBuilder(
-    BuildContext context,
-    int month,
-    int year,
-  ) {
+  Widget monthBuilder(BuildContext context, int month, int year) {
     return Container(
       color: Colors.white,
       child: Column(

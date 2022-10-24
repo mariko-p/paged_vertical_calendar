@@ -20,8 +20,9 @@ class Month {
 class Week {
   final DateTime firstDay;
   final DateTime lastDay;
+  final int weekOfYear;
 
-  Week(this.firstDay, this.lastDay);
+  Week(this.firstDay, this.lastDay, this.weekOfYear);
 
   int get duration => lastDay.day - firstDay.day;
 
