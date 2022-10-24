@@ -504,7 +504,6 @@ class _MonthViewState extends State<_MonthView> {
           }
 
           int dayPosition = position ~/ 2 - 1;
-
           DateTime day = DateTime(
             week.firstDay.year,
             week.firstDay.month,
