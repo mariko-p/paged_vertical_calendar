@@ -369,11 +369,11 @@ class _MonthView extends StatelessWidget {
       ),
       builder: (BuildContext context, double stuckAmount) {
         stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
-        print("${month.month} $stuckAmount");
         return monthBuilder?.call(
               context,
               month.month,
               month.year,
+              stuckAmount > 0.5,
             ) ??
             _DefaultMonthView(
               month: month.month,
@@ -486,7 +486,11 @@ class _DefaultDayView extends StatelessWidget {
 }
 
 typedef MonthBuilder = Widget Function(
-    BuildContext context, int month, int year);
+  BuildContext context,
+  int month,
+  int year,
+  bool isPinned,
+);
 typedef DayBuilder = Widget Function(BuildContext context, DateTime date);
 
 typedef OnMonthLoaded = void Function(int year, int month);

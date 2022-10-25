@@ -33,7 +33,8 @@ class _VerticalScrollableCalendarState
     );
   }
 
-  Widget monthBuilder(BuildContext context, int month, int year) {
+  Widget monthBuilder(
+      BuildContext context, int month, int year, bool isPinned) {
     return Container(
       color: Colors.white,
       child: Column(
@@ -46,7 +47,7 @@ class _VerticalScrollableCalendarState
               left: 5,
               right: 5,
             ),
-            child: monthTitleText(year, month),
+            child: monthTitleText(year, month, isPinned),
           ),
           Padding(
             padding: const EdgeInsets.only(
@@ -63,10 +64,10 @@ class _VerticalScrollableCalendarState
     );
   }
 
-  Widget monthTitleText(int year, int month) {
+  Widget monthTitleText(int year, int month, bool isPinned) {
     return Text(
       DateFormat('MMM. yyyy').format(DateTime(year, month)),
-      style: monthTitle,
+      style: isPinned ? pinnedMonthTitle : monthTitle,
     );
   }
 
