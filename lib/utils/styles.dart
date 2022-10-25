@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 const primaryColor = Color(0xff7C4DFF);
 
+const pinnedMonthTitle = TextStyle(
+  fontFamily: 'Rubik',
+  fontSize: 14,
+  height: 1.5,
+  fontWeight: FontWeight.w500,
+  color: Colors.black,
+);
+
 const monthTitle = TextStyle(
   fontFamily: 'Rubik',
   fontSize: 14,
