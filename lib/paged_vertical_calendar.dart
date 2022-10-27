@@ -290,7 +290,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
   }
 }
 
-class _MonthView extends StatelessWidget {
+class _MonthView extends StatefulWidget {
   _MonthView({
     required this.month,
     this.monthBuilder,
@@ -305,6 +305,11 @@ class _MonthView extends StatelessWidget {
   final ValueChanged<DateTime>? onDayPressed;
   final bool startWeekWithSunday;
 
+  @override
+  _MonthViewState createState() => _MonthViewState();
+}
+
+class _MonthViewState extends State<_MonthView> {
   final rowSpacer = TableRow(
     children: [
       SizedBox(
@@ -334,9 +339,31 @@ class _MonthView extends StatelessWidget {
     ],
   );
 
+  ScrollController? scrollController = ScrollController(
+      // initialScrollOffset: 0.0,
+      // keepScrollOffset: true,
+      );
+
+  @override
+  void initState() {
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   scrollController!.addListener(_scrollListener);
+    // });
+  }
+
+  Future<void> _scrollListener() async {
+    // if (scrollController!.offset >=
+    //         scrollController!.position.maxScrollExtent &&
+    //     !scrollController!.position.outOfRange) {
+    //   print("scroll ${scrollController!.offset}");
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
     return StickyHeaderBuilder(
+      // controller: scrollController,
       overlapHeaders: false,
       content: Padding(
         padding: const EdgeInsets.only(
@@ -347,15 +374,15 @@ class _MonthView extends StatelessWidget {
           children: <Widget>[
             Table(
               children: List<TableRow>.generate(
-                month.weeks.length * 2 - 1,
+                widget.month.weeks.length * 2 - 1,
                 (int position) {
                   if (position % 2 != 0) {
                     return rowSpacer;
                   } else {
                     return _generateWeekRow(
                       context,
-                      month.weeks[position ~/ 2],
-                      startWeekWithSunday,
+                      widget.month.weeks[position ~/ 2],
+                      widget.startWeekWithSunday,
                     );
                   }
                 },
@@ -368,16 +395,17 @@ class _MonthView extends StatelessWidget {
         ),
       ),
       builder: (BuildContext context, double stuckAmount) {
-        stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
-        return monthBuilder?.call(
+        var stuckAmount2 = 1.0 - stuckAmount.clamp(0.0, 1.0);
+        return widget.monthBuilder?.call(
               context,
-              month.month,
-              month.year,
-              stuckAmount > 0.5,
+              widget.month.month,
+              widget.month.year,
+              stuckAmount2 > 0.5,
+              stuckAmount,
             ) ??
             _DefaultMonthView(
-              month: month.month,
-              year: month.year,
+              month: widget.month.month,
+              year: widget.month.year,
             );
       },
     );
@@ -424,8 +452,10 @@ class _MonthView extends StatelessWidget {
               aspectRatio: 1.0,
               child: InkWell(
                 customBorder: new CircleBorder(),
-                onTap: onDayPressed == null ? null : () => onDayPressed!(day),
-                child: dayBuilder?.call(context, day) ??
+                onTap: widget.onDayPressed == null
+                    ? null
+                    : () => widget.onDayPressed!(day),
+                child: widget.dayBuilder?.call(context, day) ??
                     _DefaultDayView(date: day),
               ),
             );
@@ -490,6 +520,7 @@ typedef MonthBuilder = Widget Function(
   int month,
   int year,
   bool isPinned,
+  double stuckAmount,
 );
 typedef DayBuilder = Widget Function(BuildContext context, DateTime date);
 
