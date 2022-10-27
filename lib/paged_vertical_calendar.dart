@@ -296,35 +296,6 @@ class _MonthView extends StatefulWidget {
   final ValueChanged<DateTime>? onDayPressed;
   final bool startWeekWithSunday;
 
-  final rowSpacer = TableRow(
-    children: [
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-      SizedBox(
-        height: 8,
-      ),
-    ],
-  );
-
   @override
   _MonthViewState createState() => _MonthViewState();
 }
@@ -452,11 +423,11 @@ class _MonthViewState extends State<_MonthView> {
       ),
       builder: (BuildContext context, double stuckAmount) {
         stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
-        print("${month.month} $stuckAmount");
-        return monthBuilder?.call(
+        print("${widget.month.month} $stuckAmount");
+        return widget.monthBuilder?.call(
               context,
-              month.month,
-              month.year,
+              widget.month.month,
+              widget.month.year,
             ) ??
             _DefaultMonthView(
               month: widget.month.month,
@@ -593,6 +564,7 @@ class _DefaultDayView extends StatelessWidget {
 
 typedef MonthBuilder = Widget Function(
     BuildContext context, int month, int year);
+
 typedef DayBuilder = Widget Function(BuildContext context, DateTime date);
 
 typedef OnMonthLoaded = void Function(int year, int month);
