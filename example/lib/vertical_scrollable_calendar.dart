@@ -16,25 +16,74 @@ class VerticalScrollableCalendar extends StatefulWidget {
 class _VerticalScrollableCalendarState
     extends State<VerticalScrollableCalendar> {
   DateTime? chosenDate;
+  int? month;
+  int? year;
 
   @override
   Widget build(BuildContext context) {
-    return PagedVerticalCalendar(
-      minDate: DateTime.now(),
-      initialDate: DateTime.now(),
-      monthBuilder: monthBuilder,
-      dayBuilder: dayBuilder,
-      onDayPressed: (date) {
-        setState(() {
-          chosenDate = date;
-        });
-        widget.onDayPressed(date);
-      },
+    return Stack(
+      children: [
+        PagedVerticalCalendar(
+          minDate: DateTime.now(),
+          initialDate: DateTime.now(),
+          monthBuilder: monthBuilder,
+          dayBuilder: dayBuilder,
+          onDayPressed: (date) {
+            setState(() {
+              chosenDate = date;
+            });
+            widget.onDayPressed(date);
+          },
+        ),
+        Align(
+          alignment: AlignmentDirectional(1, -1),
+          child: Padding(
+            padding: const EdgeInsets.only(
+              top: 8,
+              bottom: 8,
+              right: 15,
+              // left: 39,
+            ),
+            child: Stack(
+              children: [
+                Container(
+                  height: 80,
+                  color: Colors.white,
+                  child: dayNames(),
+                ),
+                Positioned(
+                  child: this.year != null && this.month != null
+                      ? monthTitleText(this.year!, this.month!, true)
+                      : SizedBox(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget monthBuilder(
-      BuildContext context, int month, int year, bool isPinned) {
+    BuildContext context,
+    int month,
+    int year,
+    bool isPinned,
+    double stuckAmount,
+  ) {
+    if (isPinned) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (this.month != month) {
+          print("isPinned $month $isPinned $stuckAmount");
+        }
+        if (stuckAmount != 0.0) {
+          setState(() {
+            this.month = month;
+            this.year = year;
+          });
+        }
+      });
+    }
     return Container(
       color: Colors.white,
       child: Column(
@@ -46,17 +95,9 @@ class _VerticalScrollableCalendarState
               top: 8,
               left: 5,
               right: 5,
+              bottom: 8,
             ),
             child: monthTitleText(year, month, isPinned),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 8,
-              bottom: 8,
-              right: 15,
-              // left: 39,
-            ),
-            child: dayNames(),
           ),
           Divider(height: 1),
         ],
