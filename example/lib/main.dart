@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:paged_vertical_calendar_example/vertical_scrollable_calendar.dart';
+import 'package:paged_vertical_calendar/vertical_scrollable_calendar.dart';
 
 void main() => runApp(Home());
 
