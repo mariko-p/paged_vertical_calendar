@@ -23,39 +23,40 @@ class _VerticalScrollableCalendarState
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        PagedVerticalCalendar(
-          minDate: DateTime.now(),
-          initialDate: DateTime.now(),
-          monthBuilder: monthBuilder,
-          dayBuilder: dayBuilder,
-          onDayPressed: (date) {
-            setState(() {
-              chosenDate = date;
-            });
-            widget.onDayPressed(date);
-          },
+        Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: PagedVerticalCalendar(
+            minDate: DateTime.now(),
+            initialDate: DateTime.now(),
+            monthBuilder: monthBuilder,
+            dayBuilder: dayBuilder,
+            onDayPressed: (date) {
+              setState(() {
+                chosenDate = date;
+              });
+              widget.onDayPressed(date);
+            },
+          ),
         ),
         Align(
           alignment: AlignmentDirectional(1, -1),
-          child: Padding(
-            padding: const EdgeInsets.only(
-              top: 8,
-              bottom: 8,
-              right: 15,
-              // left: 39,
-            ),
-            child: Stack(
+          child: Container(
+            height: 62,
+            color: Colors.white,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  height: 80,
-                  color: Colors.white,
-                  child: dayNames(),
-                ),
-                Positioned(
-                  child: this.year != null && this.month != null
-                      ? monthTitleText(this.year!, this.month!, true)
-                      : SizedBox(),
-                ),
+                this.year != null && this.month != null
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 5.0),
+                        child: monthTitleText(this.year!, this.month!, true),
+                      )
+                    : SizedBox(),
+                dayNames(),
+                Divider(
+                  height: 1,
+                )
               ],
             ),
           ),
@@ -106,26 +107,45 @@ class _VerticalScrollableCalendarState
   }
 
   Widget monthTitleText(int year, int month, bool isPinned) {
-    return Text(
-      DateFormat('MMM. yyyy').format(DateTime(year, month)),
-      style: isPinned ? pinnedMonthTitle : monthTitle,
+    return Container(
+      height: 21,
+      child: Text(
+        DateFormat('MMM. yyyy').format(DateTime(year, month)),
+        style: isPinned ? pinnedMonthTitle : monthTitle,
+      ),
     );
   }
 
   Widget dayNames() {
-    return Row(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(child: SizedBox()),
-        weekText('M'),
-        weekText('T'),
-        weekText('W'),
-        weekText('T'),
-        weekText('F'),
-        weekText('S'),
-        weekText('S'),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            width: 39,
+            child: SizedBox(),
+          ),
+          weekText('M'),
+          Expanded(child: SizedBox()),
+          weekText('T'),
+          Expanded(child: SizedBox()),
+          weekText('W'),
+          Expanded(child: SizedBox()),
+          weekText('T'),
+          Expanded(child: SizedBox()),
+          weekText('F'),
+          Expanded(child: SizedBox()),
+          weekText('S'),
+          Expanded(child: SizedBox()),
+          weekText('S'),
+          Container(
+            width: 15,
+            child: SizedBox(),
+          ),
+        ],
+      ),
     );
   }
 
@@ -248,7 +268,9 @@ class _VerticalScrollableCalendarState
   }
 
   Widget weekText(String text) {
-    return Expanded(
+    return Container(
+      width: 32,
+      height: 24,
       child: Center(
         child: Text(
           text,
