@@ -336,6 +336,30 @@ class _MonthViewState extends State<_MonthView> {
       SizedBox(
         height: 8,
       ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
     ],
   );
 
@@ -367,13 +391,25 @@ class _MonthViewState extends State<_MonthView> {
       overlapHeaders: false,
       content: Padding(
         padding: const EdgeInsets.only(
-          top: 5,
-          right: 15,
+          top: 15,
         ),
         child: Column(
           children: <Widget>[
             Table(
+              columnWidths: {
+                0: IntrinsicColumnWidth(),
+                1: IntrinsicColumnWidth(),
+                2: IntrinsicColumnWidth(),
+                4: IntrinsicColumnWidth(),
+                6: IntrinsicColumnWidth(),
+                8: IntrinsicColumnWidth(),
+                10: IntrinsicColumnWidth(),
+                12: IntrinsicColumnWidth(),
+                14: IntrinsicColumnWidth(),
+                15: IntrinsicColumnWidth(),
+              },
               children: List<TableRow>.generate(
+                // 16,
                 widget.month.weeks.length * 2 - 1,
                 (int position) {
                   if (position % 2 != 0) {
@@ -420,11 +456,12 @@ class _MonthViewState extends State<_MonthView> {
 
     return TableRow(
       children: List<Widget>.generate(
-        DateTime.daysPerWeek + 1,
+        16,
         (int position) {
           if (position == 0) {
-            return AspectRatio(
-              aspectRatio: 1.0,
+            return Container(
+              height: 32,
+              width: 24,
               child: Center(
                 child: Text(
                   week.weekOfYear.toString(),
@@ -434,27 +471,40 @@ class _MonthViewState extends State<_MonthView> {
             );
           }
 
+          if (position == 1 || position == 15) {
+            return Container(
+              height: 32,
+              width: 15,
+              child: SizedBox(),
+            );
+          }
+
+          if (position % 2 != 0) {
+            return Container();
+          }
+
+          int dayPosition = position ~/ 2 - 1;
+
           DateTime day = DateTime(
             week.firstDay.year,
             week.firstDay.month,
             firstDay.day +
-                ((position - 1) -
+                ((dayPosition) -
                     (DateUtils.getWeekDay(firstDay, startWeekWithSunday) - 1)),
           );
 
-          if (position <
+          if ((dayPosition + 1) <
                   DateUtils.getWeekDay(week.firstDay, startWeekWithSunday) ||
-              position >
+              (dayPosition + 1) >
                   DateUtils.getWeekDay(week.lastDay, startWeekWithSunday)) {
             return const SizedBox();
           } else {
-            return AspectRatio(
-              aspectRatio: 1.0,
+            return Container(
+              height: 32,
+              width: 32,
               child: InkWell(
                 customBorder: new CircleBorder(),
-                onTap: widget.onDayPressed == null
-                    ? null
-                    : () => widget.onDayPressed!(day),
+                onTap: onDayTap(day),
                 child: widget.dayBuilder?.call(context, day) ??
                     _DefaultDayView(date: day),
               ),
@@ -464,6 +514,14 @@ class _MonthViewState extends State<_MonthView> {
         growable: false,
       ),
     );
+  }
+
+  GestureTapCallback? onDayTap(day) {
+    if (widget.onDayPressed == null) {
+      return null;
+    }
+
+    return () => widget.onDayPressed!(day);
   }
 }
 
