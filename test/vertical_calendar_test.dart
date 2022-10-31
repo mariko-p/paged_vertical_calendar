@@ -39,7 +39,8 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: PagedVerticalCalendar(
-              monthBuilder: (context, month, year) => Text('$year $month'),
+              monthBuilder: (context, month, year, isPinned, stuckAmount) =>
+                  Text('$year $month'),
             ),
           ),
         ),
