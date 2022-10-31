@@ -296,6 +296,35 @@ class _MonthView extends StatefulWidget {
   final ValueChanged<DateTime>? onDayPressed;
   final bool startWeekWithSunday;
 
+  final rowSpacer = TableRow(
+    children: [
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+      SizedBox(
+        height: 8,
+      ),
+    ],
+  );
+
   @override
   _MonthViewState createState() => _MonthViewState();
 }
