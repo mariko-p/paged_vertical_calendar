@@ -428,6 +428,8 @@ class _MonthViewState extends State<_MonthView> {
               context,
               widget.month.month,
               widget.month.year,
+              stuckAmount == 0.0,
+              stuckAmount,
             ) ??
             _DefaultMonthView(
               month: widget.month.month,
@@ -562,8 +564,8 @@ class _DefaultDayView extends StatelessWidget {
   }
 }
 
-typedef MonthBuilder = Widget Function(
-    BuildContext context, int month, int year);
+typedef MonthBuilder = Widget Function(BuildContext context, int month,
+    int year, bool isPinned, double stuckAmount);
 
 typedef DayBuilder = Widget Function(BuildContext context, DateTime date);
 
