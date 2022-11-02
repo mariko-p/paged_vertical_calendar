@@ -5,19 +5,55 @@ import 'package:paged_vertical_calendar/utils/styles.dart';
 
 class VerticalScrollableCalendar extends StatefulWidget {
   final ValueChanged<DateTime> onDayPressed;
+  final DateTime minDate;
 
-  VerticalScrollableCalendar({required this.onDayPressed});
+  VerticalScrollableCalendar({
+    required this.onDayPressed,
+    required this.minDate,
+  });
 
   @override
-  _VerticalScrollableCalendarState createState() =>
-      _VerticalScrollableCalendarState();
+  VerticalScrollableCalendarState createState() =>
+      VerticalScrollableCalendarState(minDate: minDate);
 }
 
-class _VerticalScrollableCalendarState
+class VerticalScrollableCalendarState
     extends State<VerticalScrollableCalendar> {
   DateTime? chosenDate;
-  int? month;
-  int? year;
+  DateTime minDate;
+  late int month;
+  late int year;
+
+  VerticalScrollableCalendarState({required this.minDate}) {
+    this.month = minDate.month;
+    this.year = minDate.year;
+  }
+
+  void pinPreviousMonth(int unpinnedYear, int unpinnedMonth) {
+    if (month != unpinnedMonth || year != unpinnedYear) {
+      return;
+    }
+
+    if (unpinnedYear == minDate.year && unpinnedMonth == minDate.month) {
+      return;
+    }
+
+    var previousYear = unpinnedYear;
+    var previousMonth = unpinnedMonth;
+    if (unpinnedMonth == 1) {
+      previousMonth = 12;
+      previousYear = unpinnedYear - 1;
+    } else {
+      previousMonth = unpinnedMonth - 1;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        this.year = previousYear;
+        this.month = previousMonth;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +62,8 @@ class _VerticalScrollableCalendarState
         Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: PagedVerticalCalendar(
-            minDate: DateTime.now(),
-            initialDate: DateTime.now(),
+            minDate: widget.minDate,
+            initialDate: widget.minDate,
             monthBuilder: monthBuilder,
             dayBuilder: dayBuilder,
             onDayPressed: (date) {
@@ -36,6 +72,17 @@ class _VerticalScrollableCalendarState
               });
               widget.onDayPressed(date);
             },
+            onMonthPinned: ((year, month) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                setState(() {
+                  this.year = year;
+                  this.month = month;
+                });
+              });
+            }),
+            onMonthUnpinned: ((year, month) {
+              pinPreviousMonth(year, month);
+            }),
           ),
         ),
         Align(
@@ -47,12 +94,10 @@ class _VerticalScrollableCalendarState
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                this.year != null && this.month != null
-                    ? Padding(
-                        padding: const EdgeInsets.only(left: 5.0),
-                        child: monthTitleText(this.year!, this.month!, true),
-                      )
-                    : SizedBox(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: monthTitleText(this.year, this.month, true),
+                ),
                 dayNames(),
                 Divider(
                   height: 1,
@@ -74,9 +119,6 @@ class _VerticalScrollableCalendarState
   ) {
     if (isPinned) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (this.month != month) {
-          print("isPinned $month $isPinned $stuckAmount");
-        }
         if (stuckAmount != 0.0) {
           setState(() {
             this.month = month;
@@ -161,7 +203,7 @@ class _VerticalScrollableCalendarState
     if (isCurrentDate(date)) {
       return currentDateSelected(date);
     }
-    if (date.isBefore(DateTime.now())) {
+    if (date.isBefore(widget.minDate)) {
       return Opacity(
         opacity: 0.5,
         child: selectedNonCurrentDate(date),
@@ -175,7 +217,7 @@ class _VerticalScrollableCalendarState
       return currentDate(date, dayNumberCurrentDate, primaryColor);
     }
 
-    if (DateTime.now().isAfter(date)) {
+    if (widget.minDate.isAfter(date)) {
       return inactiveDate(date);
     }
 
@@ -183,9 +225,9 @@ class _VerticalScrollableCalendarState
   }
 
   bool isCurrentDate(DateTime date) {
-    return DateTime.now().year == date.year &&
-        DateTime.now().month == date.month &&
-        DateTime.now().day == date.day;
+    return widget.minDate.year == date.year &&
+        widget.minDate.month == date.month &&
+        widget.minDate.day == date.day;
   }
 
   bool isSelectedDate(DateTime date) {
