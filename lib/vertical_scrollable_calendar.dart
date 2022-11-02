@@ -7,8 +7,10 @@ class VerticalScrollableCalendar extends StatefulWidget {
   final ValueChanged<DateTime> onDayPressed;
   final DateTime minDate;
   final bool canSelectInPast;
+  final String? headerText;
 
   VerticalScrollableCalendar({
+    this.headerText,
     required this.onDayPressed,
     required this.minDate,
     required this.canSelectInPast,
@@ -63,7 +65,8 @@ class VerticalScrollableCalendarState
     return Stack(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 20.0),
+          padding:
+              EdgeInsets.only(top: widget.headerText != null ? 40.0 : 20.0),
           child: PagedVerticalCalendar(
             minDate: widget.canSelectInPast == false ? widget.minDate : null,
             initialDate: widget.minDate,
@@ -93,7 +96,7 @@ class VerticalScrollableCalendarState
         Align(
           alignment: AlignmentDirectional(1, -1),
           child: Container(
-            height: 62,
+            height: widget.headerText != null ? 83.0 : 62.0,
             color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -104,6 +107,13 @@ class VerticalScrollableCalendarState
                   child: monthTitleText(this.year, this.month, true),
                 ),
                 dayNames(),
+                widget.headerText != null
+                    ? Text(
+                        widget.headerText!,
+                        style: headerInfoText,
+                        textAlign: TextAlign.center,
+                      )
+                    : SizedBox.shrink(),
                 Divider(
                   height: 1,
                 )
