@@ -21,6 +21,7 @@ class Home extends StatelessWidget {
               },
               minDate: DateTime.utc(2022, 4, 15),
               canSelectInPast: false,
+              headerText: "monday 28 mar.  •  20 activities this day",
             ),
           ),
         ),
