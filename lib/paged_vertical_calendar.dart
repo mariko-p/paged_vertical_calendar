@@ -48,6 +48,8 @@ class PagedVerticalCalendar extends StatefulWidget {
     this.scrollController,
     this.listPadding = EdgeInsets.zero,
     this.startWeekWithSunday = false,
+    this.canSelectInPast = false,
+    this.showPreviousWeeksInFirstMonth = false,
   }) : this.initialDate = initialDate ?? DateTime.now().removeTime();
 
   /// the [DateTime] to start the calendar from, if no [startDate] is provided
@@ -108,6 +110,10 @@ class PagedVerticalCalendar extends StatefulWidget {
 
   /// Select start day of the week to be Sunday
   final bool startWeekWithSunday;
+
+  final bool canSelectInPast;
+
+  final bool showPreviousWeeksInFirstMonth;
 
   @override
   _PagedVerticalCalendarState createState() => _PagedVerticalCalendarState();
@@ -256,6 +262,10 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                       startWeekWithSunday: widget.startWeekWithSunday,
                       onMonthPinned: widget.onMonthPinned,
                       onMonthUnpinned: widget.onMonthUnpinned,
+                      canSelectInPast: widget.canSelectInPast,
+                      minDate: widget.minDate,
+                      showPreviousWeeksInFirstMonth:
+                          widget.showPreviousWeeksInFirstMonth,
                     );
                   },
                 ),
@@ -273,6 +283,10 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                     startWeekWithSunday: widget.startWeekWithSunday,
                     onMonthPinned: widget.onMonthPinned,
                     onMonthUnpinned: widget.onMonthUnpinned,
+                    canSelectInPast: widget.canSelectInPast,
+                    minDate: widget.minDate,
+                    showPreviousWeeksInFirstMonth:
+                        widget.showPreviousWeeksInFirstMonth,
                   );
                 },
               ),
@@ -299,7 +313,10 @@ class _MonthView extends StatefulWidget {
     this.onDayPressed,
     this.onMonthPinned,
     this.onMonthUnpinned,
+    this.minDate,
     required this.startWeekWithSunday,
+    required this.canSelectInPast,
+    required this.showPreviousWeeksInFirstMonth,
   });
 
   final Month month;
@@ -307,6 +324,9 @@ class _MonthView extends StatefulWidget {
   final DayBuilder? dayBuilder;
   final ValueChanged<DateTime>? onDayPressed;
   final bool startWeekWithSunday;
+  final bool canSelectInPast;
+  final bool showPreviousWeeksInFirstMonth;
+  final DateTime? minDate;
   final OnMonthPinned? onMonthPinned;
   final OnMonthPinned? onMonthUnpinned;
 
@@ -384,6 +404,14 @@ class _MonthViewState extends State<_MonthView> {
 
   @override
   Widget build(BuildContext context) {
+    List<Week> weeks = widget.month.weeks;
+
+    if (widget.minDate != null && !widget.showPreviousWeeksInFirstMonth) {
+      weeks = widget.month.weeks
+          .where((element) => widget.minDate!.isBefore(element.lastDay))
+          .toList();
+    }
+
     return StickyHeader(
       callback: (double stuckAmount) {
         if (stuckAmount > 0.5 && _stuckAmount != null && _stuckAmount! <= 0.5) {
@@ -444,14 +472,14 @@ class _MonthViewState extends State<_MonthView> {
               },
               children: List<TableRow>.generate(
                 // 16,
-                widget.month.weeks.length * 2 - 1,
+                weeks.length * 2 - 1,
                 (int position) {
                   if (position % 2 != 0) {
                     return rowSpacer;
                   } else {
                     return _generateWeekRow(
                       context,
-                      widget.month.weeks[position ~/ 2],
+                      weeks[position ~/ 2],
                       widget.startWeekWithSunday,
                     );
                   }
@@ -535,12 +563,28 @@ class _MonthViewState extends State<_MonthView> {
     );
   }
 
-  GestureTapCallback? onDayTap(day) {
+  GestureTapCallback? onDayTap(DateTime day) {
     if (widget.onDayPressed == null) {
       return null;
     }
 
+    if (!widget.canSelectInPast &&
+        widget.minDate != null &&
+        isBefore(widget.minDate!, day)) {
+      return null;
+    }
+
     return () => widget.onDayPressed!(day);
+  }
+
+  bool isBefore(DateTime minDate, DateTime day) {
+    if (minDate.year == day.year &&
+        minDate.month == day.month &&
+        minDate.day == day.day) {
+      return false;
+    }
+
+    return day.isBefore(minDate);
   }
 }
 
