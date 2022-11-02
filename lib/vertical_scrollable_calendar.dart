@@ -30,7 +30,8 @@ class VerticalScrollableCalendarState
   }
 
   void pinPreviousMonth(int unpinnedYear, int unpinnedMonth) {
-    if (month != unpinnedMonth || year != unpinnedYear) {
+    if (unpinnedYear > year ||
+        (year == unpinnedYear && unpinnedMonth > month)) {
       return;
     }
 
