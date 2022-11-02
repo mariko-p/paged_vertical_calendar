@@ -10,6 +10,20 @@ const pinnedMonthTitle = TextStyle(
   color: Colors.black,
 );
 
+var headerInfoText = TextStyle(
+  fontFamily: 'Rubik',
+  fontSize: 14,
+  height: 1.5,
+  fontWeight: FontWeight.w400,
+  color: Color.alphaBlend(
+    Color(0x7dffffff),
+    Color.alphaBlend(
+      Color(0xd48f8f8f),
+      Color(0xff2979FF),
+    ),
+  ),
+);
+
 const monthTitle = TextStyle(
   fontFamily: 'Rubik',
   fontSize: 14,
