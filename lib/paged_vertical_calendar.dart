@@ -40,6 +40,8 @@ class PagedVerticalCalendar extends StatefulWidget {
     this.addAutomaticKeepAlives = false,
     this.onDayPressed,
     this.onMonthLoaded,
+    this.onMonthPinned,
+    this.onMonthUnpinned,
     this.onPaginationCompleted,
     this.invisibleMonthsThreshold = 1,
     this.physics,
@@ -83,6 +85,10 @@ class PagedVerticalCalendar extends StatefulWidget {
 
   /// callback when a new paginated month is loaded.
   final OnMonthLoaded? onMonthLoaded;
+
+  final OnMonthPinned? onMonthPinned;
+
+  final OnMonthPinned? onMonthUnpinned;
 
   /// called when the calendar pagination is completed. if no [minDate] or [maxDate] is
   /// provided this method is never called for that direction
@@ -248,6 +254,8 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                       dayBuilder: widget.dayBuilder,
                       onDayPressed: widget.onDayPressed,
                       startWeekWithSunday: widget.startWeekWithSunday,
+                      onMonthPinned: widget.onMonthPinned,
+                      onMonthUnpinned: widget.onMonthUnpinned,
                     );
                   },
                 ),
@@ -263,6 +271,8 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                     dayBuilder: widget.dayBuilder,
                     onDayPressed: widget.onDayPressed,
                     startWeekWithSunday: widget.startWeekWithSunday,
+                    onMonthPinned: widget.onMonthPinned,
+                    onMonthUnpinned: widget.onMonthUnpinned,
                   );
                 },
               ),
@@ -287,6 +297,8 @@ class _MonthView extends StatefulWidget {
     this.monthBuilder,
     this.dayBuilder,
     this.onDayPressed,
+    this.onMonthPinned,
+    this.onMonthUnpinned,
     required this.startWeekWithSunday,
   });
 
@@ -295,6 +307,8 @@ class _MonthView extends StatefulWidget {
   final DayBuilder? dayBuilder;
   final ValueChanged<DateTime>? onDayPressed;
   final bool startWeekWithSunday;
+  final OnMonthPinned? onMonthPinned;
+  final OnMonthPinned? onMonthUnpinned;
 
   @override
   _MonthViewState createState() => _MonthViewState();
@@ -354,32 +368,61 @@ class _MonthViewState extends State<_MonthView> {
     ],
   );
 
-  ScrollController? scrollController = ScrollController(
-      // initialScrollOffset: 0.0,
-      // keepScrollOffset: true,
-      );
+  double? _stuckAmount;
 
-  @override
-  void initState() {
-    super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   scrollController!.addListener(_scrollListener);
-    // });
-  }
-
-  Future<void> _scrollListener() async {
-    // if (scrollController!.offset >=
-    //         scrollController!.position.maxScrollExtent &&
-    //     !scrollController!.position.outOfRange) {
-    //   print("scroll ${scrollController!.offset}");
-    // }
+  void saveStuckAmout(double stuckAmount) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(
+          () {
+            _stuckAmount = stuckAmount;
+          },
+        );
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return StickyHeaderBuilder(
-      // controller: scrollController,
-      overlapHeaders: false,
+    return StickyHeader(
+      callback: (double stuckAmount) {
+        if (stuckAmount > 0.5 && _stuckAmount != null && _stuckAmount! <= 0.5) {
+          widget.onMonthUnpinned?.call(widget.month.year, widget.month.month);
+        }
+
+        if (stuckAmount < 0.5 && _stuckAmount != null && _stuckAmount! >= 0.5) {
+          widget.onMonthPinned?.call(widget.month.year, widget.month.month);
+        }
+
+        if (_stuckAmount == null) {
+          saveStuckAmout(stuckAmount);
+        } else if (stuckAmount < 0.0 && _stuckAmount! >= 0) {
+          saveStuckAmout(stuckAmount);
+        } else if (stuckAmount == 0.0 && _stuckAmount != 0.0) {
+          saveStuckAmout(stuckAmount);
+        } else if (stuckAmount > 0.0 &&
+            stuckAmount <= 0.5 &&
+            (_stuckAmount! <= 0.0 || _stuckAmount! > 0.5)) {
+          saveStuckAmout(stuckAmount);
+        } else if (stuckAmount > 0.5 &&
+            stuckAmount < 1.0 &&
+            (_stuckAmount! <= 0.5 || _stuckAmount! >= 1.0)) {
+          saveStuckAmout(stuckAmount);
+        } else if (stuckAmount >= 1.0 && _stuckAmount! < 1.0) {
+          saveStuckAmout(stuckAmount);
+        }
+      },
+      header: widget.monthBuilder?.call(
+            context,
+            widget.month.month,
+            widget.month.year,
+            false,
+            0.1,
+          ) ??
+          _DefaultMonthView(
+            month: widget.month.month,
+            year: widget.month.year,
+          ),
       content: Padding(
         padding: const EdgeInsets.only(
           top: 15,
@@ -421,21 +464,6 @@ class _MonthViewState extends State<_MonthView> {
           ],
         ),
       ),
-      builder: (BuildContext context, double stuckAmount) {
-        stuckAmount = 1.0 - stuckAmount.clamp(0.0, 1.0);
-        print("${widget.month.month} $stuckAmount");
-        return widget.monthBuilder?.call(
-              context,
-              widget.month.month,
-              widget.month.year,
-              stuckAmount == 0.0,
-              stuckAmount,
-            ) ??
-            _DefaultMonthView(
-              month: widget.month.month,
-              year: widget.month.year,
-            );
-      },
     );
   }
 
@@ -570,3 +598,5 @@ typedef MonthBuilder = Widget Function(BuildContext context, int month,
 typedef DayBuilder = Widget Function(BuildContext context, DateTime date);
 
 typedef OnMonthLoaded = void Function(int year, int month);
+
+typedef OnMonthPinned = void Function(int year, int month);

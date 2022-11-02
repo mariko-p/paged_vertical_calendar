@@ -19,6 +19,7 @@ class Home extends StatelessWidget {
               onDayPressed: (date) {
                 // TODO add date selection logic
               },
+              minDate: DateTime.utc(2022, 4, 15),
             ),
           ),
         ),
