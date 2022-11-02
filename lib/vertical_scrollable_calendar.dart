@@ -62,66 +62,69 @@ class VerticalScrollableCalendarState
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Padding(
-          padding:
-              EdgeInsets.only(top: widget.headerText != null ? 40.0 : 20.0),
-          child: PagedVerticalCalendar(
-            minDate: widget.canSelectInPast == false ? widget.minDate : null,
-            initialDate: widget.minDate,
-            monthBuilder: monthBuilder,
-            dayBuilder: dayBuilder,
-            onDayPressed: (date) {
-              setState(() {
-                chosenDate = date;
-              });
-              widget.onDayPressed(date);
-            },
-            onMonthPinned: ((year, month) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
+    return Container(
+      color: Colors.white,
+      child: Stack(
+        children: [
+          Padding(
+            padding:
+                EdgeInsets.only(top: widget.headerText != null ? 40.0 : 20.0),
+            child: PagedVerticalCalendar(
+              minDate: widget.canSelectInPast == false ? widget.minDate : null,
+              initialDate: widget.minDate,
+              monthBuilder: monthBuilder,
+              dayBuilder: dayBuilder,
+              onDayPressed: (date) {
                 setState(() {
-                  this.year = year;
-                  this.month = month;
+                  chosenDate = date;
                 });
-              });
-            }),
-            onMonthUnpinned: ((year, month) {
-              pinPreviousMonth(year, month);
-            }),
-            canSelectInPast: widget.canSelectInPast,
-            showPreviousWeeksInFirstMonth: widget.canSelectInPast,
-          ),
-        ),
-        Align(
-          alignment: AlignmentDirectional(1, -1),
-          child: Container(
-            height: widget.headerText != null ? 83.0 : 62.0,
-            color: Colors.white,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 5.0),
-                  child: monthTitleText(this.year, this.month, true),
-                ),
-                dayNames(),
-                widget.headerText != null
-                    ? Text(
-                        widget.headerText!,
-                        style: headerInfoText,
-                        textAlign: TextAlign.center,
-                      )
-                    : SizedBox.shrink(),
-                Divider(
-                  height: 1,
-                )
-              ],
+                widget.onDayPressed(date);
+              },
+              onMonthPinned: ((year, month) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  setState(() {
+                    this.year = year;
+                    this.month = month;
+                  });
+                });
+              }),
+              onMonthUnpinned: ((year, month) {
+                pinPreviousMonth(year, month);
+              }),
+              canSelectInPast: widget.canSelectInPast,
+              showPreviousWeeksInFirstMonth: widget.canSelectInPast,
             ),
           ),
-        ),
-      ],
+          Align(
+            alignment: AlignmentDirectional(1, -1),
+            child: Container(
+              height: widget.headerText != null ? 83.0 : 62.0,
+              color: Colors.white,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 5.0),
+                    child: monthTitleText(this.year, this.month, true),
+                  ),
+                  dayNames(),
+                  widget.headerText != null
+                      ? Text(
+                          widget.headerText!,
+                          style: headerInfoText,
+                          textAlign: TextAlign.center,
+                        )
+                      : SizedBox.shrink(),
+                  Divider(
+                    height: 1,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
