@@ -6,10 +6,12 @@ import 'package:paged_vertical_calendar/utils/styles.dart';
 class VerticalScrollableCalendar extends StatefulWidget {
   final ValueChanged<DateTime> onDayPressed;
   final DateTime minDate;
+  final bool canSelectInPast;
 
   VerticalScrollableCalendar({
     required this.onDayPressed,
     required this.minDate,
+    required this.canSelectInPast,
   });
 
   @override
@@ -63,7 +65,7 @@ class VerticalScrollableCalendarState
         Padding(
           padding: const EdgeInsets.only(top: 20.0),
           child: PagedVerticalCalendar(
-            minDate: widget.minDate,
+            minDate: widget.canSelectInPast == false ? widget.minDate : null,
             initialDate: widget.minDate,
             monthBuilder: monthBuilder,
             dayBuilder: dayBuilder,
@@ -84,6 +86,8 @@ class VerticalScrollableCalendarState
             onMonthUnpinned: ((year, month) {
               pinPreviousMonth(year, month);
             }),
+            canSelectInPast: widget.canSelectInPast,
+            showPreviousWeeksInFirstMonth: widget.canSelectInPast,
           ),
         ),
         Align(
