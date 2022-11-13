@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:paged_vertical_calendar/paged_vertical_calendar.dart';
 import 'package:intl/intl.dart';
+import 'package:paged_vertical_calendar/paged_vertical_calendar_controller.dart';
 import 'package:paged_vertical_calendar/utils/styles.dart';
 
 class VerticalScrollableCalendar extends StatefulWidget {
-  final ValueChanged<DateTime> onDayPressed;
+  final ValueChanged<DateTime?> onDayPressed;
   final DateTime minDate;
   final bool canSelectInPast;
+  final Color backgroundColor;
+  final bool isHeaderHiddenOnFirstMonth;
   final String? headerText;
+  final PagedVerticalCalendarController? pagedVerticalCalendarController;
 
   VerticalScrollableCalendar({
-    this.headerText,
     required this.onDayPressed,
     required this.minDate,
     required this.canSelectInPast,
+    this.backgroundColor = Colors.white,
+    this.isHeaderHiddenOnFirstMonth = false,
+    this.headerText,
+    this.pagedVerticalCalendarController,
   });
 
   @override
@@ -53,6 +60,11 @@ class VerticalScrollableCalendarState
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (previousYear > year ||
+          (previousYear == year && previousMonth > month)) {
+        return;
+      }
+
       setState(() {
         this.year = previousYear;
         this.month = previousMonth;
@@ -63,22 +75,40 @@ class VerticalScrollableCalendarState
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: widget.backgroundColor,
       child: Stack(
         children: [
           Padding(
-            padding:
-                EdgeInsets.only(top: widget.headerText != null ? 40.0 : 20.0),
+            padding: EdgeInsets.only(
+              top: widget.isHeaderHiddenOnFirstMonth
+                  ? (widget.headerText != null ? 0.0 : 0.0)
+                  : (widget.headerText != null ? 40.0 : 20.0),
+            ),
             child: PagedVerticalCalendar(
+              backgroundColor: widget.backgroundColor,
+              scrollController: ScrollController(initialScrollOffset: 0),
               minDate: widget.canSelectInPast == false ? widget.minDate : null,
               initialDate: widget.minDate,
               monthBuilder: monthBuilder,
+              firstMonthBuilder: firstMonthBuilder,
               dayBuilder: dayBuilder,
-              onDayPressed: (date) {
-                setState(() {
-                  chosenDate = date;
-                });
-                widget.onDayPressed(date);
+              onDayPressed: (DateTime? date, bool force) {
+                if (force == false &&
+                    chosenDate != null &&
+                    date != null &&
+                    chosenDate!.year == date.year &&
+                    chosenDate!.month == date.month &&
+                    chosenDate!.day == date.day) {
+                  setState(() {
+                    chosenDate = null;
+                    widget.onDayPressed(null);
+                  });
+                } else {
+                  setState(() {
+                    chosenDate = date;
+                  });
+                  widget.onDayPressed(date);
+                }
               },
               onMonthPinned: ((year, month) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,35 +123,40 @@ class VerticalScrollableCalendarState
               }),
               canSelectInPast: widget.canSelectInPast,
               showPreviousWeeksInFirstMonth: widget.canSelectInPast,
+              controller: widget.pagedVerticalCalendarController,
             ),
           ),
           Align(
             alignment: AlignmentDirectional(1, -1),
-            child: Container(
-              height: widget.headerText != null ? 83.0 : 62.0,
-              color: Colors.white,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5.0),
-                    child: monthTitleText(this.year, this.month, true),
-                  ),
-                  dayNames(),
-                  widget.headerText != null
-                      ? Text(
-                          widget.headerText!,
-                          style: headerInfoText,
-                          textAlign: TextAlign.center,
+            child: widget.isHeaderHiddenOnFirstMonth &&
+                    widget.minDate.year == year &&
+                    widget.minDate.month == month
+                ? SizedBox.shrink()
+                : Container(
+                    height: widget.headerText != null ? 83.0 : 62.0,
+                    color: widget.backgroundColor,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 5.0),
+                          child: monthTitleText(this.year, this.month, true),
+                        ),
+                        dayNames(),
+                        widget.headerText != null
+                            ? Text(
+                                widget.headerText!,
+                                style: headerInfoText,
+                                textAlign: TextAlign.center,
+                              )
+                            : SizedBox.shrink(),
+                        Divider(
+                          height: 1,
                         )
-                      : SizedBox.shrink(),
-                  Divider(
-                    height: 1,
-                  )
-                ],
-              ),
-            ),
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),
@@ -145,25 +180,78 @@ class VerticalScrollableCalendarState
         }
       });
     }
-    return Container(
-      color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(
-              top: 8,
-              left: 5,
-              right: 5,
-              bottom: 8,
+    return widget.isHeaderHiddenOnFirstMonth &&
+            widget.minDate.year == year &&
+            widget.minDate.month == month
+        ? SizedBox.shrink()
+        : Container(
+            color: widget.backgroundColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 8,
+                    left: 5,
+                    right: 5,
+                    bottom: 8,
+                  ),
+                  child: monthTitleText(year, month, isPinned),
+                ),
+                Divider(height: 1),
+              ],
             ),
-            child: monthTitleText(year, month, isPinned),
-          ),
-          Divider(height: 1),
-        ],
-      ),
-    );
+          );
+  }
+
+  Widget firstMonthBuilder(
+    BuildContext context,
+    int month,
+    int year,
+    bool isPinned,
+    double stuckAmount,
+  ) {
+    if (isPinned) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (stuckAmount != 0.0) {
+          setState(() {
+            this.month = month;
+            this.year = year;
+          });
+        }
+      });
+    }
+    return widget.isHeaderHiddenOnFirstMonth &&
+            widget.minDate.year == year &&
+            widget.minDate.month == month
+        ? Container(
+            height: widget.headerText != null ? 67.0 : 46.0,
+            color: widget.backgroundColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Divider(
+                  height: 1,
+                ),
+                dayNames(),
+                widget.headerText != null
+                    ? Text(
+                        widget.headerText!,
+                        style: headerInfoText,
+                        textAlign: TextAlign.center,
+                      )
+                    : SizedBox.shrink(),
+                SizedBox(
+                  height: 5,
+                )
+              ],
+            ),
+          )
+        : SizedBox(
+            height: 15,
+          );
   }
 
   Widget monthTitleText(int year, int month, bool isPinned) {
@@ -266,7 +354,7 @@ class VerticalScrollableCalendarState
       child: currentDate(
         date,
         dayNumberSelectedDate,
-        Colors.white,
+        widget.backgroundColor,
       ),
     );
   }
