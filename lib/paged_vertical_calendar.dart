@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide DateUtils;
 import 'package:flutter/rendering.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:paged_vertical_calendar/paged_vertical_calendar_controller.dart';
 import 'package:paged_vertical_calendar/utils/date_models.dart';
 import 'package:paged_vertical_calendar/utils/date_utils.dart';
 import 'package:paged_vertical_calendar/utils/styles.dart';
@@ -36,6 +37,7 @@ class PagedVerticalCalendar extends StatefulWidget {
     this.maxDate,
     DateTime? initialDate,
     this.monthBuilder,
+    this.firstMonthBuilder,
     this.dayBuilder,
     this.addAutomaticKeepAlives = false,
     this.onDayPressed,
@@ -50,6 +52,8 @@ class PagedVerticalCalendar extends StatefulWidget {
     this.startWeekWithSunday = false,
     this.canSelectInPast = false,
     this.showPreviousWeeksInFirstMonth = false,
+    this.controller,
+    this.backgroundColor = Colors.white,
   }) : this.initialDate = initialDate ?? DateTime.now().removeTime();
 
   /// the [DateTime] to start the calendar from, if no [startDate] is provided
@@ -71,6 +75,8 @@ class PagedVerticalCalendar extends StatefulWidget {
   /// * [int] month: 1-12
   final MonthBuilder? monthBuilder;
 
+  final MonthBuilder? firstMonthBuilder;
+
   /// a Builder used for day generation. a default [DayBuilder] is
   /// used when no custom [DayBuilder] is provided.
   /// * [context]
@@ -83,7 +89,7 @@ class PagedVerticalCalendar extends StatefulWidget {
 
   /// callback that provides the [DateTime] of the day that's been interacted
   /// with
-  final ValueChanged<DateTime>? onDayPressed;
+  final OnDayPressed? onDayPressed;
 
   /// callback when a new paginated month is loaded.
   final OnMonthLoaded? onMonthLoaded;
@@ -115,8 +121,13 @@ class PagedVerticalCalendar extends StatefulWidget {
 
   final bool showPreviousWeeksInFirstMonth;
 
+  final PagedVerticalCalendarController? controller;
+
+  final Color backgroundColor;
+
   @override
-  _PagedVerticalCalendarState createState() => _PagedVerticalCalendarState();
+  _PagedVerticalCalendarState createState() =>
+      _PagedVerticalCalendarState(controller);
 }
 
 class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
@@ -125,6 +136,14 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
 
   final Key downListKey = UniqueKey();
   late bool hideUp;
+
+  _PagedVerticalCalendarState(PagedVerticalCalendarController? _controller) {
+    if (_controller != null) {
+      _controller.scrollTo = scrollTo;
+      _controller.scrollToStart = scrollToStart;
+      _controller.selectDate = selectDate;
+    }
+  }
 
   @override
   void initState() {
@@ -239,6 +258,19 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
     }
   }
 
+  void scrollToStart() {
+    widget.scrollController?.animateTo(0.0,
+        duration: Duration(milliseconds: 300), curve: SawTooth(1));
+  }
+
+  void scrollTo(int index) {
+    // TODO add scroll function here
+  }
+
+  void selectDate(DateTime date) {
+    widget.onDayPressed!(date, true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scrollable(
@@ -257,6 +289,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                     return _MonthView(
                       month: month,
                       monthBuilder: widget.monthBuilder,
+                      firstMonthBuilder: widget.firstMonthBuilder,
                       dayBuilder: widget.dayBuilder,
                       onDayPressed: widget.onDayPressed,
                       startWeekWithSunday: widget.startWeekWithSunday,
@@ -266,6 +299,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                       minDate: widget.minDate,
                       showPreviousWeeksInFirstMonth:
                           widget.showPreviousWeeksInFirstMonth,
+                      backgroundColor: widget.backgroundColor,
                     );
                   },
                 ),
@@ -278,6 +312,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                   return _MonthView(
                     month: month,
                     monthBuilder: widget.monthBuilder,
+                    firstMonthBuilder: widget.firstMonthBuilder,
                     dayBuilder: widget.dayBuilder,
                     onDayPressed: widget.onDayPressed,
                     startWeekWithSunday: widget.startWeekWithSunday,
@@ -287,6 +322,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                     minDate: widget.minDate,
                     showPreviousWeeksInFirstMonth:
                         widget.showPreviousWeeksInFirstMonth,
+                    backgroundColor: widget.backgroundColor,
                   );
                 },
               ),
@@ -307,28 +343,33 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
 
 class _MonthView extends StatefulWidget {
   _MonthView({
+    Key? key,
     required this.month,
     this.monthBuilder,
+    this.firstMonthBuilder,
     this.dayBuilder,
     this.onDayPressed,
     this.onMonthPinned,
     this.onMonthUnpinned,
     this.minDate,
+    required this.backgroundColor,
     required this.startWeekWithSunday,
     required this.canSelectInPast,
     required this.showPreviousWeeksInFirstMonth,
-  });
+  }) : super(key: key);
 
   final Month month;
   final MonthBuilder? monthBuilder;
+  final MonthBuilder? firstMonthBuilder;
   final DayBuilder? dayBuilder;
-  final ValueChanged<DateTime>? onDayPressed;
+  final OnDayPressed? onDayPressed;
   final bool startWeekWithSunday;
   final bool canSelectInPast;
   final bool showPreviousWeeksInFirstMonth;
   final DateTime? minDate;
   final OnMonthPinned? onMonthPinned;
   final OnMonthPinned? onMonthUnpinned;
+  final Color backgroundColor;
 
   @override
   _MonthViewState createState() => _MonthViewState();
@@ -408,7 +449,7 @@ class _MonthViewState extends State<_MonthView> {
 
     if (widget.minDate != null && !widget.showPreviousWeeksInFirstMonth) {
       weeks = widget.month.weeks
-          .where((element) => widget.minDate!.isBefore(element.lastDay))
+          .where((element) => widget.minDate!.isBefore(element.lastDay.nextDay))
           .toList();
     }
 
@@ -451,46 +492,53 @@ class _MonthViewState extends State<_MonthView> {
             month: widget.month.month,
             year: widget.month.year,
           ),
-      content: Padding(
-        padding: const EdgeInsets.only(
-          top: 15,
-        ),
-        child: Column(
-          children: <Widget>[
-            Table(
-              columnWidths: {
-                0: IntrinsicColumnWidth(),
-                1: IntrinsicColumnWidth(),
-                2: IntrinsicColumnWidth(),
-                4: IntrinsicColumnWidth(),
-                6: IntrinsicColumnWidth(),
-                8: IntrinsicColumnWidth(),
-                10: IntrinsicColumnWidth(),
-                12: IntrinsicColumnWidth(),
-                14: IntrinsicColumnWidth(),
-                15: IntrinsicColumnWidth(),
-              },
-              children: List<TableRow>.generate(
-                // 16,
-                weeks.length * 2 - 1,
-                (int position) {
-                  if (position % 2 != 0) {
-                    return rowSpacer;
-                  } else {
-                    return _generateWeekRow(
-                      context,
-                      weeks[position ~/ 2],
-                      widget.startWeekWithSunday,
-                    );
-                  }
-                },
+      content: Column(
+        children: <Widget>[
+          widget.firstMonthBuilder?.call(
+                context,
+                widget.month.month,
+                widget.month.year,
+                false,
+                0.1,
+              ) ??
+              _DefaultMonthView(
+                month: widget.month.month,
+                year: widget.month.year,
               ),
+          Table(
+            columnWidths: {
+              0: IntrinsicColumnWidth(),
+              1: IntrinsicColumnWidth(),
+              2: IntrinsicColumnWidth(),
+              4: IntrinsicColumnWidth(),
+              6: IntrinsicColumnWidth(),
+              8: IntrinsicColumnWidth(),
+              10: IntrinsicColumnWidth(),
+              12: IntrinsicColumnWidth(),
+              14: IntrinsicColumnWidth(),
+              15: IntrinsicColumnWidth(),
+            },
+            children: List<TableRow>.generate(
+              // 16,
+              weeks.length * 2 - 1,
+              (int position) {
+                if (position % 2 != 0) {
+                  return rowSpacer;
+                } else {
+                  return _generateWeekRow(
+                    context,
+                    weeks[position ~/ 2],
+                    widget.startWeekWithSunday,
+                    widget.backgroundColor,
+                  );
+                }
+              },
             ),
-            SizedBox(
-              height: 10,
-            ),
-          ],
-        ),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+        ],
       ),
     );
   }
@@ -499,6 +547,7 @@ class _MonthViewState extends State<_MonthView> {
     BuildContext context,
     Week week,
     bool startWeekWithSunday,
+    Color backgroundColor,
   ) {
     DateTime firstDay = week.firstDay;
 
@@ -549,11 +598,14 @@ class _MonthViewState extends State<_MonthView> {
             return Container(
               height: 32,
               width: 32,
-              child: InkWell(
-                customBorder: new CircleBorder(),
-                onTap: onDayTap(day),
-                child: widget.dayBuilder?.call(context, day) ??
-                    _DefaultDayView(date: day),
+              child: Material(
+                color: backgroundColor,
+                child: InkWell(
+                  customBorder: new CircleBorder(),
+                  onTap: onDayTap(day),
+                  child: widget.dayBuilder?.call(context, day) ??
+                      _DefaultDayView(date: day),
+                ),
               ),
             );
           }
@@ -574,7 +626,7 @@ class _MonthViewState extends State<_MonthView> {
       return null;
     }
 
-    return () => widget.onDayPressed!(day);
+    return () => widget.onDayPressed!(day, false);
   }
 
   bool isBefore(DateTime minDate, DateTime day) {
@@ -642,5 +694,7 @@ typedef MonthBuilder = Widget Function(BuildContext context, int month,
 typedef DayBuilder = Widget Function(BuildContext context, DateTime date);
 
 typedef OnMonthLoaded = void Function(int year, int month);
+
+typedef OnDayPressed = void Function(DateTime? day, bool forceSelection);
 
 typedef OnMonthPinned = void Function(int year, int month);

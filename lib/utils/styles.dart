@@ -79,7 +79,7 @@ var dayNumberCurrentDate = TextStyle(
 var dayNumberSelectedDate = TextStyle(
   fontFamily: 'Rubik',
   fontSize: 12,
-  fontWeight: FontWeight.w400,
+  fontWeight: FontWeight.w500,
   color: Colors.white,
 );
 
