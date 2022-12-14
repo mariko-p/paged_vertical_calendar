@@ -13,6 +13,7 @@ class VerticalScrollableCalendar extends StatefulWidget {
   final String? headerText;
   final PagedVerticalCalendarController? pagedVerticalCalendarController;
   final DateTime? chosenDate;
+  final DateTime? initialDate;
 
   VerticalScrollableCalendar({
     required this.onDayPressed,
@@ -23,23 +24,45 @@ class VerticalScrollableCalendar extends StatefulWidget {
     this.headerText,
     this.pagedVerticalCalendarController,
     this.chosenDate,
+    this.initialDate,
   });
 
   @override
   VerticalScrollableCalendarState createState() =>
-      VerticalScrollableCalendarState(minDate: minDate, chosenDate: chosenDate);
+      VerticalScrollableCalendarState(
+        minDate: minDate,
+        chosenDate: chosenDate,
+        initialDate: initialDate,
+      );
 }
 
 class VerticalScrollableCalendarState
     extends State<VerticalScrollableCalendar> {
   DateTime? chosenDate;
+  DateTime? initialDate;
   DateTime minDate;
   late int month;
   late int year;
 
-  VerticalScrollableCalendarState({required this.minDate, this.chosenDate}) {
-    this.month = minDate.month;
-    this.year = minDate.year;
+  DateTime get firstDate {
+    if (initialDate != null) {
+      return initialDate!;
+    }
+
+    if (chosenDate != null) {
+      return chosenDate!;
+    }
+
+    return minDate;
+  }
+
+  VerticalScrollableCalendarState({
+    required this.minDate,
+    this.chosenDate,
+    this.initialDate,
+  }) {
+    this.month = firstDate.month;
+    this.year = firstDate.year;
   }
 
   void pinPreviousMonth(int unpinnedYear, int unpinnedMonth) {
@@ -90,7 +113,7 @@ class VerticalScrollableCalendarState
               backgroundColor: widget.backgroundColor,
               scrollController: ScrollController(initialScrollOffset: 0),
               minDate: widget.canSelectInPast == false ? widget.minDate : null,
-              initialDate: widget.minDate,
+              initialDate: firstDate,
               monthBuilder: monthBuilder,
               firstMonthBuilder: firstMonthBuilder,
               dayBuilder: dayBuilder,
