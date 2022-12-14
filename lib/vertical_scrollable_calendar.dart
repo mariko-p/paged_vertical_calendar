@@ -12,6 +12,7 @@ class VerticalScrollableCalendar extends StatefulWidget {
   final bool isHeaderHiddenOnFirstMonth;
   final String? headerText;
   final PagedVerticalCalendarController? pagedVerticalCalendarController;
+  final DateTime? chosenDate;
 
   VerticalScrollableCalendar({
     required this.onDayPressed,
@@ -21,11 +22,12 @@ class VerticalScrollableCalendar extends StatefulWidget {
     this.isHeaderHiddenOnFirstMonth = false,
     this.headerText,
     this.pagedVerticalCalendarController,
+    this.chosenDate,
   });
 
   @override
   VerticalScrollableCalendarState createState() =>
-      VerticalScrollableCalendarState(minDate: minDate);
+      VerticalScrollableCalendarState(minDate: minDate, chosenDate: chosenDate);
 }
 
 class VerticalScrollableCalendarState
@@ -35,7 +37,7 @@ class VerticalScrollableCalendarState
   late int month;
   late int year;
 
-  VerticalScrollableCalendarState({required this.minDate}) {
+  VerticalScrollableCalendarState({required this.minDate, this.chosenDate}) {
     this.month = minDate.month;
     this.year = minDate.year;
   }
