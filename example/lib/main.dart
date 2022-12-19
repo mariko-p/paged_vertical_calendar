@@ -22,12 +22,30 @@ class Home extends StatelessWidget {
             ),
             child: Column(
               children: [
-                CupertinoButton(
-                  child: Text("Today"),
-                  onPressed: () {
-                    _pagedVerticalCalendarController.scrollToStart();
-                    _pagedVerticalCalendarController.selectDate(DateTime.now());
-                  },
+                Row(
+                  children: [
+                    CupertinoButton(
+                      child: Text("Today"),
+                      onPressed: () {
+                        _pagedVerticalCalendarController
+                            .scrollToDateAndSelect(DateTime.now());
+                      },
+                    ),
+                    CupertinoButton(
+                      child: Text("2020/03/25"),
+                      onPressed: () {
+                        _pagedVerticalCalendarController
+                            .scrollToDateAndSelect(DateTime(2020, 3, 25));
+                      },
+                    ),
+                    CupertinoButton(
+                      child: Text("2030/03/25"),
+                      onPressed: () {
+                        _pagedVerticalCalendarController
+                            .scrollToDateAndSelect(DateTime(2030, 3, 25));
+                      },
+                    ),
+                  ],
                 ),
                 Expanded(
                   child: VerticalScrollableCalendar(
@@ -37,10 +55,10 @@ class Home extends StatelessWidget {
                     minDate: DateTime.now(),
                     chosenDate: DateTime(2023, 4, 23),
                     initialDate: DateTime(2023, 3, 23),
-                    canSelectInPast: false,
+                    canSelectInPast: true,
                     backgroundColor: Colors.amber,
                     headerText: "monday 28 mar.  •  20 activities this day",
-                    isHeaderHiddenOnFirstMonth: true,
+                    isHeaderHiddenOnFirstMonth: false,
                     pagedVerticalCalendarController:
                         _pagedVerticalCalendarController,
                   ),
