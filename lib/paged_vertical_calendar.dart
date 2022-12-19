@@ -5,6 +5,7 @@ import 'package:paged_vertical_calendar/paged_vertical_calendar_controller.dart'
 import 'package:paged_vertical_calendar/utils/date_models.dart';
 import 'package:paged_vertical_calendar/utils/date_utils.dart';
 import 'package:paged_vertical_calendar/utils/styles.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 
 /// enum indicating the pagination enpoint direction
@@ -134,13 +135,15 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
   late PagingController<int, Month> _pagingReplyUpController;
   late PagingController<int, Month> _pagingReplyDownController;
 
+  late AutoScrollController autoScrollController;
+
   final Key downListKey = UniqueKey();
   late bool hideUp;
 
   _PagedVerticalCalendarState(PagedVerticalCalendarController? _controller) {
     if (_controller != null) {
-      _controller.scrollTo = scrollTo;
-      _controller.scrollToStart = scrollToStart;
+      _controller.scrollToDateAndSelect = scrollToDateAndSelect;
+      _controller.scrollToDate = scrollToDate;
       _controller.selectDate = selectDate;
     }
   }
@@ -174,6 +177,16 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
     );
     _pagingReplyDownController.addPageRequestListener(_fetchDownPage);
     _pagingReplyDownController.addStatusListener(paginationStatusDown);
+
+    autoScrollController = AutoScrollController(
+      viewportBoundaryGetter: () => Rect.fromLTRB(
+        0,
+        0,
+        0,
+        MediaQuery.of(context).padding.bottom,
+      ),
+      axis: Axis.vertical,
+    );
   }
 
   @override
@@ -263,8 +276,29 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
         duration: Duration(milliseconds: 300), curve: SawTooth(1));
   }
 
-  void scrollTo(int index) {
-    // TODO add scroll function here
+  void scrollToDateAndSelect(DateTime date) {
+    scrollToDate(date);
+    selectDate(date);
+  }
+
+  void scrollToDate(DateTime date) {
+    final initialDate =
+        DateTime(widget.initialDate.year, widget.initialDate.month, 1);
+    final wantedDate = DateTime(date.year, date.month, 1);
+
+    final yearsDifference = wantedDate.year - initialDate.year;
+    final monthsDifference =
+        yearsDifference * 12 + wantedDate.month - initialDate.month;
+
+    if (wantedDate.isAfter(initialDate)) {
+      autoScrollController.scrollToIndex(monthsDifference,
+          duration: Duration(milliseconds: 300),
+          preferPosition: AutoScrollPosition.begin);
+    } else {
+      autoScrollController.scrollToIndex(monthsDifference,
+          duration: Duration(milliseconds: 300),
+          preferPosition: AutoScrollPosition.begin);
+    }
   }
 
   void selectDate(DateTime date) {
@@ -274,7 +308,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
   @override
   Widget build(BuildContext context) {
     return Scrollable(
-      controller: widget.scrollController,
+      controller: autoScrollController,
       physics: widget.physics,
       viewportBuilder: (BuildContext context, ViewportOffset position) {
         return Viewport(
@@ -286,7 +320,39 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                 pagingController: _pagingReplyUpController,
                 builderDelegate: PagedChildBuilderDelegate<Month>(
                   itemBuilder: (BuildContext context, Month month, int index) {
-                    return _MonthView(
+                    return AutoScrollTag(
+                      index: -index - 1,
+                      key: ValueKey("${month.month}-${month.year}"),
+                      controller: autoScrollController,
+                      child: _MonthView(
+                        month: month,
+                        monthBuilder: widget.monthBuilder,
+                        firstMonthBuilder: widget.firstMonthBuilder,
+                        dayBuilder: widget.dayBuilder,
+                        onDayPressed: widget.onDayPressed,
+                        startWeekWithSunday: widget.startWeekWithSunday,
+                        onMonthPinned: widget.onMonthPinned,
+                        onMonthUnpinned: widget.onMonthUnpinned,
+                        canSelectInPast: widget.canSelectInPast,
+                        minDate: widget.minDate,
+                        showPreviousWeeksInFirstMonth:
+                            widget.showPreviousWeeksInFirstMonth,
+                        backgroundColor: widget.backgroundColor,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            PagedSliverList(
+              key: downListKey,
+              pagingController: _pagingReplyDownController,
+              builderDelegate: PagedChildBuilderDelegate<Month>(
+                itemBuilder: (BuildContext context, Month month, int index) {
+                  return AutoScrollTag(
+                    index: index,
+                    key: ValueKey("${month.month}-${month.year}"),
+                    controller: autoScrollController,
+                    child: _MonthView(
                       month: month,
                       monthBuilder: widget.monthBuilder,
                       firstMonthBuilder: widget.firstMonthBuilder,
@@ -300,29 +366,7 @@ class _PagedVerticalCalendarState extends State<PagedVerticalCalendar> {
                       showPreviousWeeksInFirstMonth:
                           widget.showPreviousWeeksInFirstMonth,
                       backgroundColor: widget.backgroundColor,
-                    );
-                  },
-                ),
-              ),
-            PagedSliverList(
-              key: downListKey,
-              pagingController: _pagingReplyDownController,
-              builderDelegate: PagedChildBuilderDelegate<Month>(
-                itemBuilder: (BuildContext context, Month month, int index) {
-                  return _MonthView(
-                    month: month,
-                    monthBuilder: widget.monthBuilder,
-                    firstMonthBuilder: widget.firstMonthBuilder,
-                    dayBuilder: widget.dayBuilder,
-                    onDayPressed: widget.onDayPressed,
-                    startWeekWithSunday: widget.startWeekWithSunday,
-                    onMonthPinned: widget.onMonthPinned,
-                    onMonthUnpinned: widget.onMonthUnpinned,
-                    canSelectInPast: widget.canSelectInPast,
-                    minDate: widget.minDate,
-                    showPreviousWeeksInFirstMonth:
-                        widget.showPreviousWeeksInFirstMonth,
-                    backgroundColor: widget.backgroundColor,
+                    ),
                   );
                 },
               ),
