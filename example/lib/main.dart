@@ -52,10 +52,8 @@ class Home extends StatelessWidget {
                     onDayPressed: (date) {
                       // TODO add date selection logic
                     },
-                    minDate: DateTime.now(),
-                    chosenDate: DateTime(2023, 4, 23),
-                    initialDate: DateTime(2023, 3, 23),
-                    canSelectInPast: true,
+                    minDate: DateTime(2023, 3, 28),
+                    canSelectInPast: false,
                     backgroundColor: Colors.amber,
                     headerText: "monday 28 mar.  •  20 activities this day",
                     isHeaderHiddenOnFirstMonth: false,

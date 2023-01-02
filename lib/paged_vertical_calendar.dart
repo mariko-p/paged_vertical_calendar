@@ -563,7 +563,6 @@ class _MonthViewState extends State<_MonthView> {
               15: IntrinsicColumnWidth(),
             },
             children: List<TableRow>.generate(
-              // 16,
               weeks.length * 2 - 1,
               (int position) {
                 if (position % 2 != 0) {
@@ -637,7 +636,11 @@ class _MonthViewState extends State<_MonthView> {
                   DateUtils.getWeekDay(week.firstDay, startWeekWithSunday) ||
               (dayPosition + 1) >
                   DateUtils.getWeekDay(week.lastDay, startWeekWithSunday)) {
-            return const SizedBox();
+            return Container(
+              height: 32,
+              width: 32,
+              child: SizedBox(),
+            );
           } else {
             return Container(
               height: 32,

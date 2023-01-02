@@ -257,9 +257,6 @@ class VerticalScrollableCalendarState
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Divider(
-                  height: 1,
-                ),
                 dayNames(),
                 widget.headerText != null
                     ? Text(
