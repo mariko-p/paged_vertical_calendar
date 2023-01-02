@@ -24,8 +24,8 @@ class VerticalScrollableCalendar extends StatefulWidget {
     this.headerText,
     this.pagedVerticalCalendarController,
     this.chosenDate,
-    this.initialDate,
-  });
+    DateTime? initialDate,
+  }) : this.initialDate = initialDate ?? minDate;
 
   @override
   VerticalScrollableCalendarState createState() =>
