@@ -408,7 +408,10 @@ class VerticalScrollableCalendarState
       width: 32.0,
       height: 32.0,
       decoration: new BoxDecoration(
-        color: primaryColor,
+        color: Color.alphaBlend(
+          Color(0xd48f8f8f),
+          Color(0xff2979FF),
+        ),
         shape: BoxShape.circle,
       ),
       child: Center(
