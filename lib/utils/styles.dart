@@ -86,6 +86,6 @@ var dayNumberSelectedDate = TextStyle(
 const dayNumber = TextStyle(
   fontFamily: 'Rubik',
   fontSize: 12,
-  fontWeight: FontWeight.w300,
+  fontWeight: FontWeight.w400,
   color: Colors.black,
 );
