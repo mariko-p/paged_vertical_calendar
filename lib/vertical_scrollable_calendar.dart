@@ -285,7 +285,7 @@ class VerticalScrollableCalendarState
     return Container(
       height: 21,
       child: Text(
-        DateFormat('MMM. yyyy', widget.languageCode)
+        DateFormat('MMM yyyy', widget.languageCode)
             .format(DateTime(year, month)),
         style: isPinned ? pinnedMonthTitle : monthTitle,
       ),
