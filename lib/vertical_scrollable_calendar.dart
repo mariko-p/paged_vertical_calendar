@@ -14,6 +14,7 @@ class VerticalScrollableCalendar extends StatefulWidget {
   final PagedVerticalCalendarController? pagedVerticalCalendarController;
   final DateTime? chosenDate;
   final DateTime? initialDate;
+  final String? languageCode;
 
   VerticalScrollableCalendar({
     required this.onDayPressed,
@@ -25,6 +26,7 @@ class VerticalScrollableCalendar extends StatefulWidget {
     this.pagedVerticalCalendarController,
     this.chosenDate,
     this.initialDate,
+    this.languageCode,
   });
 
   @override
@@ -283,7 +285,8 @@ class VerticalScrollableCalendarState
     return Container(
       height: 21,
       child: Text(
-        DateFormat('MMM. yyyy').format(DateTime(year, month)),
+        DateFormat('MMM. yyyy', widget.languageCode)
+            .format(DateTime(year, month)),
         style: isPinned ? pinnedMonthTitle : monthTitle,
       ),
     );
